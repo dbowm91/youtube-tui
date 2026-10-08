@@ -100,7 +100,17 @@ pub fn init(
     framework
         .data
         .global
-        .insert::<MpvWrapper>(MpvWrapper::spawn());
+        .insert::<MpvWrapper>(MpvWrapper::spawn(
+            framework
+                .data
+                .global
+                .get::<MainConfig>()
+                .unwrap()
+                .env
+                .get("youtube-downloader")
+                .cloned()
+                .unwrap_or_else(|| String::from("yt-dlp")),
+        ));
 
     framework.data.state.insert::<Tasks>(Tasks::default());
     framework.data.state.insert::<Page>(Page::default());

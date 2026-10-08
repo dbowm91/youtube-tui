@@ -70,7 +70,10 @@ impl FrameworkItem for ItemInfo {
                         } as u32),
                         x: area.x,
                         y: area.y as i16,
-                        #[cfg(not(any(feature = "sixel", feature = "halfblock")))]
+                        // viuer only has the `use_sixel` field when its `sixel` or
+                        // `icy_sixel` feature is enabled, which is exactly what
+                        // our `sixel` feature turns on.
+                        #[cfg(feature = "sixel")]
                         use_sixel: main_config.images.use_sixels(),
                         ..Default::default()
                     };

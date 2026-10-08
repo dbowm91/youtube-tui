@@ -177,4 +177,6 @@ Switch back the old key input handling where the selected item captures all inpu
 
 Env are variables that can be used in `commands.yml`, this allows you to change multiple commands by modifying just one env variable. And not to be confused with system/terminal environment variables, these are just *"a thing"* that you can use in the TUI.
 
+The example above shows Linux values. On fresh installs the platform defaults differ: `browser` is `open` on macOS and `explorer` on Windows; `terminal-emulator` is empty on macOS (downloads run headless — see [macOS installation](../installation.md#installation-on-macos)) and `cmd /c start cmd /k` on Windows; `download-path`/`save-path` resolve to the platform download and data directories as absolute paths (avoid `~` here — it is not expanded inside the quoted `rm` cleanup commands).
+
 *Accept: `string_key: string_value` pairs*

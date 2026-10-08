@@ -334,7 +334,7 @@ impl TaskQueue {
         if area.width < min_dimentions.width || area.height < min_dimentions.height {
             let paragraph = Paragraph::new(format!(
                 "{}Current: {} x {}\nRequired: {} x {}",
-                "\n".repeat(area.height as usize / 2 - 1),
+                "\n".repeat((area.height as usize / 2).saturating_sub(1)),
                 area.width,
                 area.height,
                 min_dimentions.width,

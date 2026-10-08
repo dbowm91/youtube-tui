@@ -287,47 +287,44 @@ const fn write_to_config_default() -> WriteConfig {
 }
 
 fn default_env() -> HashMap<String, String> {
+    use crate::global::functions::paths;
+
     #[cfg(target_os = "windows")]
-    {
-        use crate::global::functions::paths;
-        HashMap::from([
-            (String::from("video-player"), String::from("mpv")),
-            (String::from("browser"), String::from("explorer")),
-            (
-                String::from("terminal-emulator"),
-                String::from("cmd /c start cmd /k"),
-            ),
-            (String::from("youtube-downloader"), String::from("yt-dlp")),
-            (
-                String::from("download-path"),
-                paths::default_download_path(),
-            ),
-            (
-                String::from("save-path"),
-                paths::default_save_path(),
-            ),
-        ])
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        HashMap::from([
-            (String::from("video-player"), String::from("mpv")),
-            (String::from("browser"), String::from("xdg-open")),
-            (
-                String::from("terminal-emulator"),
-                String::from("konsole -e"),
-            ),
-            (String::from("youtube-downloader"), String::from("yt-dlp")),
-            (
-                String::from("download-path"),
-                String::from("~/Downloads/%(title)s-%(id)s.%(ext)s"),
-            ),
-            (
-                String::from("save-path"),
-                String::from("~/.local/share/youtube-tui/saved/"),
-            ),
-        ])
-    }
+    let browser = "explorer";
+    #[cfg(target_os = "macos")]
+    let browser = "open";
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    let browser = "xdg-open";
+
+    #[cfg(target_os = "windows")]
+    let terminal_emulator = "cmd /c start cmd /k";
+    // macOS has no single command that opens a visible terminal running a
+    // given command (`open -a Terminal` ignores arguments), so downloads run
+    // headless in the background by default. Set this to your terminal's
+    // launcher (e.g. `xterm -e`) if you want visible download progress.
+    #[cfg(target_os = "macos")]
+    let terminal_emulator = "";
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    let terminal_emulator = "konsole -e";
+
+    // Download/save paths come from the platform directories (XDG on Linux,
+    // `~/Library/...` on macOS, `%LOCALAPPDATA%` on Windows) as absolute
+    // paths: `~` inside the single-quoted `rm` cleanup commands would never
+    // be expanded by the shell, so a tilde here would silently break them.
+    HashMap::from([
+        (String::from("video-player"), String::from("mpv")),
+        (String::from("browser"), String::from(browser)),
+        (
+            String::from("terminal-emulator"),
+            String::from(terminal_emulator),
+        ),
+        (String::from("youtube-downloader"), String::from("yt-dlp")),
+        (
+            String::from("download-path"),
+            paths::default_download_path(),
+        ),
+        (String::from("save-path"), paths::default_save_path()),
+    ])
 }
 
 fn shell_default() -> String {

@@ -101,6 +101,57 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", output_dir.display());
         copy_dll(&output_dir);
     }
+
+    // On Unix (macOS/Linux), allow pointing the mpv feature at a custom
+    // libmpv prefix — e.g. a self-contained arm64 bundle on Apple Silicon
+    // when the system libmpv has the wrong architecture:
+    //
+    //   MPV_LIB_DIR=/path/to/libmpv cargo build
+    //
+    // The directory is added to the link search path and baked into the
+    // binary as an rpath (needed for @rpath-style bundles; harmless for
+    // absolute-install-name system libs), so no runtime environment
+    // variables are needed — but the folder must stay in place.
+    #[cfg(all(unix, feature = "mpv"))]
+    {
+        println!("cargo:rerun-if-env-changed=MPV_LIB_DIR");
+        if let Ok(dir) = std::env::var("MPV_LIB_DIR") {
+            link_mpv_dir(&dir);
+        }
+    }
+
+    // libmpv-sys only emits `-lmpv` with no search path, and the macOS
+    // linker does not search Homebrew prefixes by default — so a plain
+    // `brew install mpv` still fails to link on Apple Silicon. Probe the
+    // usual prefixes (skipped when cross-compiling: set MPV_LIB_DIR then).
+    #[cfg(all(target_os = "macos", feature = "mpv"))]
+    {
+        println!("cargo:rerun-if-env-changed=HOMEBREW_PREFIX");
+        let target = std::env::var("TARGET").unwrap_or_default();
+        let host = std::env::var("HOST").unwrap_or_default();
+        if std::env::var("MPV_LIB_DIR").is_err() && (target.is_empty() || target == host) {
+            let mut candidates = Vec::new();
+            if let Ok(prefix) = std::env::var("HOMEBREW_PREFIX") {
+                candidates.push(format!("{prefix}/lib"));
+            }
+            candidates.push("/opt/homebrew/lib".to_string());
+            candidates.push("/usr/local/lib".to_string());
+            if let Some(dir) = candidates
+                .iter()
+                .find(|dir| std::path::Path::new(dir).join("libmpv.dylib").exists())
+            {
+                link_mpv_dir(dir);
+            }
+        }
+    }
+}
+
+/// Adds a libmpv directory to the link search path and bakes it in as an
+/// rpath so the binary finds the library at runtime without env vars.
+#[cfg(all(unix, feature = "mpv"))]
+fn link_mpv_dir(dir: &str) {
+    println!("cargo:rustc-link-search=native={dir}");
+    println!("cargo:rustc-link-arg=-Wl,-rpath,{dir}");
 }
 
 /// Copy libmpv-2.dll next to the final binary so it can be found at runtime.

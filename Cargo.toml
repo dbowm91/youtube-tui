@@ -17,7 +17,7 @@ exclude = ["/docs", "/LICENSE", "/threadcounter.sh", "/PKGBUILD"]
 
 [features]
 default = ["sixel", "halfblock", "clipboard", "mpv", "rustypipe"]
-sixel = ["viuer/sixel"]
+sixel = ["viuer/icy_sixel"]
 halfblock = ["viuer"]
 clipboard = ["dep:clipboard"]
 mpv = ["dep:libmpv-sirno"]

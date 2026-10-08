@@ -23,7 +23,7 @@ It is like an _app launcher_, it launches other programs to do the heavy lifting
 
 ## Customisable
 
-The YouTube TUI can be customised through config files, located in `~/.config/youtube-tui` on Linux or `%APPDATA%\youtube-tui` on Windows, in the YAML format.
+The YouTube TUI can be customised through config files, located in `~/.config/youtube-tui` on Linux, `~/Library/Application Support/youtube-tui` on macOS, or `%APPDATA%\youtube-tui` on Windows, in the YAML format.
 
 Here's an example of the config file:
 
